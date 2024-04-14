@@ -51,7 +51,7 @@ class WarmUpCallback(pl.callbacks.Callback):
     def on_save_checkpoint(self, trainer, pl_module, checkpoint):
         checkpoint['warmup_steps'] = self.state['steps']
 
-    def on_load_checkpoint(self, checkpoint):
+    def on_load_checkpoint(self, trainer, pl_module, checkpoint):
         self.state['steps'] = checkpoint.get('warmup_steps', 0)
 
     def load_state_dict(self, state_dict):
