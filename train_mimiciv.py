@@ -75,15 +75,15 @@ pl.seed_everything(seed)
 dm = mimiciv_mortality.MIMICIVDataModule(batch_size=512, num_workers=30, use_temp_cache=False)
 dm.setup()
 
-pretrained_path = 'checkpoints-mimiciv/last.ckpt'
+#pretrained_path = 'checkpoints-mimiciv/last.ckpt'
 pretrain_model = duett.pretrain_model(d_static_num=dm.d_static_num(),
         d_time_series_num=dm.d_time_series_num(), d_target=dm.d_target(), pos_frac=dm.pos_frac(),
         seed=seed)
 checkpoint = pl.callbacks.ModelCheckpoint(save_last=True, monitor='val_loss', mode='min', save_top_k=1, dirpath='checkpoints-mimiciv')
 warmup = WarmUpCallback(steps=2000)
 trainer = pl.Trainer(gpus=1, logger=False, num_sanity_val_steps=2, max_epochs=300, # TODO: change back to 300
-                     gradient_clip_val=1.0, callbacks=[warmup, checkpoint],
-                     resume_from_checkpoint=pretrained_path)
+                     gradient_clip_val=1.0, callbacks=[warmup, checkpoint])
+                     # resume_from_checkpoint=pretrained_path)
 trainer.fit(pretrain_model, dm)
 
 pretrained_path = checkpoint.best_model_path
