@@ -44,7 +44,7 @@ class MIMICIVDataset(Dataset):
             #"Gait/Transferring": set(range(1, 6)),
             #"History of falling (within 3 mnths)": set(range(0, 2)),  # Yes or No
             #"IV/Saline lock": set(range(0, 2)),  # Yes or No
-            "Mental status": set(range(1, 3)),
+            #"Mental status": set(range(1, 3)),
             "Marital Status": set(range(1, 7)),  # Includes '' as 6
             "Insurance": set(range(1, 6)),  # Includes '' as 5
             "Admission Location": set(range(1, 14)),  # Includes '' as 13
@@ -91,6 +91,7 @@ class MIMICIVDataset(Dataset):
             #ts_data = ts_data.iloc[:, :self.d_time_series_num()]
             #pd.set_option('display.max_rows', None)
             # print(ts_data.dtypes)
+            ts_data.drop(columns=['Observation Window Length'], inplace=True)
             ts_data = ts_data.apply(pd.to_numeric, errors='coerce')
             for column, categories in self.predefined_categories.items():
                 nan_category = -100
@@ -198,10 +199,10 @@ class MIMICIVDataset(Dataset):
         return x, y
 
     def d_static_num(self):
-        return 61
+        return 60
 
     def d_time_series_num(self):
-        return 161
+        return 159
 
     def d_target(self):
         return 1
