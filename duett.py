@@ -40,9 +40,12 @@ def pretrain_model(d_static_num, d_time_series_num, d_target, **kwargs):
     return Model(d_static_num, d_time_series_num, d_target, **kwargs)
 
 def fine_tune_model(ckpt_path, **kwargs):
-    return Model.load_from_checkpoint(ckpt_path, pretrain=False, aug_noise=0., aug_mask=0.5, transformer_dropout=0.5,
-            lr=1.e-4, weight_decay=1.e-5, fusion_method='rep_token', **kwargs)
-
+    return Model.load_from_checkpoint(ckpt_path, pretrain=False, aug_noise=0.05, aug_mask=0.6, transformer_dropout=0.6,
+                                      lr=5.e-5, weight_decay=1.e-5, fusion_method='rep_token', **kwargs)
+    #return Model.load_from_checkpoint(ckpt_path, pretrain=False, aug_noise=0., aug_mask=0.5, transformer_dropout=0.5,
+    #        lr=1.e-4, weight_decay=1.e-5, fusion_method='rep_token', **kwargs)
+    #TODO: Please uncomment the above code if you intend to switch the dataset from MIMIC-IV 2.0 (ICU Mortality) to PhysioNet-2012.
+    # Additionally, consider refactoring these parameters to a location outside of the function in future development.
 class Model(pl.LightningModule):
     def __init__(self, d_static_num, d_time_series_num, d_target, lr=3.e-4, weight_decay=1.e-1, glu=False,
             scalenorm=True, n_hidden_mlp_embedding=1, d_hidden_mlp_embedding=64, d_embedding=24, d_feedforward=512,

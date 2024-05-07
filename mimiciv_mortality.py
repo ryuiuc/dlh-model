@@ -27,9 +27,9 @@ class MIMICIVDataset(Dataset):
             #"Braden Moisture": set(range(1, 5)),
             #"Braden Nutrition": set(range(1, 5)),
             #"Braden Sensory Perception": set(range(1, 5)),
-            "GCS - Eye Opening": set(range(1, 5)),
-            "GCS - Motor Response": set(range(1, 7)),
-            "GCS - Verbal Response": set(range(0, 6)),  # Including "No Response-ETT" as 0
+            #"GCS - Eye Opening": set(range(1, 5)),
+            #"GCS - Motor Response": set(range(1, 7)),
+            #"GCS - Verbal Response": set(range(0, 6)),  # Including "No Response-ETT" as 0
             #"Goal Richmond-RAS Scale": set(range(-5, 1)),  # Negative and zero
             #"Pain Level": set(range(0, 9)),  # Includes "Unable to Score"
             #"Pain Level Response": set(range(0, 9)),  # Includes "Unable to Score"
@@ -39,8 +39,8 @@ class MIMICIVDataset(Dataset):
             #"Strength R Arm": set(range(0, 6)),
             #"Strength R Leg": set(range(0, 6)),
             #"Ambulatory aid": set(range(0, 8)),  # Including "Furniture" as 7
-            "Capillary Refill L": set(range(1, 3)),
-            "Capillary Refill R": set(range(1, 3)),
+            #"Capillary Refill L": set(range(1, 3)),
+            #"Capillary Refill R": set(range(1, 3)),
             #"Gait/Transferring": set(range(1, 6)),
             #"History of falling (within 3 mnths)": set(range(0, 2)),  # Yes or No
             #"IV/Saline lock": set(range(0, 2)),  # Yes or No
@@ -80,7 +80,7 @@ class MIMICIVDataset(Dataset):
 
         timeseries_data = []
         labels = []
-
+        cols = []
         # Load data for each stay
         for _, row in tqdm(stay_list.iterrows(), total=stay_list.shape[0], desc=f'Loading {self.split_name} data'):
             stay_id, label = row['stay'], row['y_true']
@@ -125,10 +125,12 @@ class MIMICIVDataset(Dataset):
             # Store data
             timeseries_data.append(torch.tensor(ts_data.values, dtype=torch.float32))
             labels.append(label)
+            if len(cols) == 0:
+                cols = list(ts_data.columns)
 
-        max_length = 1250
+        max_length = 1024
         preprocessed_data = []
-        min_padding_length = 1250
+        min_padding_length = 1024
         # Pad sequences with NaN and store them
         for ts_data in timeseries_data:
             # Calculate how much padding is needed
@@ -143,7 +145,7 @@ class MIMICIVDataset(Dataset):
                 ts_data_padded = ts_data
 
             preprocessed_data.append(ts_data_padded)
-        print(f'max_length = 1250, min_padding_length={min_padding_length}')
+        print(f'max_length = 1024, min_padding_length={min_padding_length}')
         # self.X = torch.stack(timeseries_data)
         self.X = torch.stack(preprocessed_data)
         self.y = torch.tensor(labels, dtype=torch.long).unsqueeze(1)
@@ -155,12 +157,13 @@ class MIMICIVDataset(Dataset):
         for i in range(self.X.shape[2]):
             vals = self.X[:,:,i].flatten()
             vals = vals[~torch.isnan(vals)]
-            if vals.numel() > 0:
+            if vals.numel() > 1:
                 self.means.append(vals.mean())
                 self.stds.append(vals.std())
                 self.maxes.append(vals.max())
                 self.mins.append(vals.min())
             else:
+                print(f'col {cols[i]} has less than 2 valid values')
                 self.means.append(0)
                 self.stds.append(1)
                 self.maxes.append(float('nan'))
@@ -202,7 +205,7 @@ class MIMICIVDataset(Dataset):
         return 60
 
     def d_time_series_num(self):
-        return 159
+        return 139
 
     def d_target(self):
         return 1
